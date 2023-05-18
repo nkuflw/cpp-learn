@@ -1,0 +1,248 @@
+#include<iostream>
+using namespace std;
+class CA {
+	int a;
+public:
+	CA(int n) {
+		a = n;
+		cout << "CA::a=" << a << endl;
+	};
+	~CA() {
+		cout << "CAobj is destructing." << endl;
+	}
+};
+class CB {
+	int b;
+public:
+	CB(int n) {
+		b = n;
+		cout << "CB::b=" << b << endl;
+	};
+	~CB() {
+		cout << "CBobh is destructing." << endl;
+	}
+};
+class CC :public CA {
+	int c;
+public:
+	CC(int n1, int n2) :CA(n2) {
+		c = n1;
+		cout << "CC::c=" << c << endl;
+	}
+	~CC() {
+		cout << "CCobj is destructing" << endl;
+	}
+};
+class CE :public CB {
+	int c;
+public:
+	CE(int n1, int n2) :CB(n2) {
+		c = n1;
+		cout << "CE::e=" << c << endl;
+	}
+	~CE() {
+		cout << "CEobj is destructing" << endl;
+	}
+};
+
+class CD :public CC, public CE {
+	int d;
+public:
+	CD(int n1, int n3, int n4, int n2) :CC(n3, n4), CE(n2,n4) {
+		d = n1;
+		cout << "CD::d=" << d << endl;
+	};
+	~CD() {
+		cout << "CDobj is destructing" << endl;
+	}
+};
+int main() {
+	CD CDobj(2, 4, 6, 8);
+	return 0;
+}
+创建派生类对象时，系统按下列步骤工作
+（1）调用各基类的构造函数，调用顺序按照他们被继承时声明的顺序（从左到右）
+（2）再调用基类各对象成员的构造函数，调用顺序按照他们再派生类中声明的顺序
+
+#include <iostream>
+using namespace std;
+class CB {
+public:
+	int a;	CB(int x) { a = x; }
+	void showa() {
+		cout << "Class CB -- a=" << a << endl;
+	}
+};
+class CD :public CB {
+public:
+	int a;  			//与基类a同名
+	CD(int x, int y) :CB(x) { a = y; }
+	void showa() {		//与基类showa同名
+		cout << "Class CD -- a=" << a << endl;
+	}
+	void print2a() {
+		cout << "a=" << a << endl; 		//子类a
+		cout << "CB::a=" << CB::a << endl; 	//父类a
+	}
+};
+void main() {
+	CB CBobj(12);
+	CBobj.showa();
+	CD CDobj(48, 999);
+	CDobj.showa();		//子类的showa
+	CDobj.CB::showa(); 	//父类的showa 
+	cout << "CDobj.a=" << CDobj.a << endl;//子类a
+	cout << "CDobj.CB::a=" << CDobj.CB::a << endl;//父类a
+}
+
+
+
+#include <iostream>
+using namespace std;
+class base { //基类base 
+	int a;
+public:
+	base(int sa) { a = sa; }
+	int geta() { return a; }
+};
+class derived :public base { //派生类derived 
+	int b;
+public:
+	derived(int sa, int sb) :base(sa) { b = sb; }
+	int getb() { return b; }
+};
+void main() {
+	base bs1(123); 		// base 类对象bs1
+	cout << "bs1.geta()=" << bs1.geta() << endl;
+	derived der(246, 468);// derived 类对象der
+	bs1 = der;  //OK! “基类对象 = 派生类对象;”
+	cout << "bs1.geta()=" << bs1.geta() << endl;
+	//der=bs1; //ERROR! “派生类对象 = 基类对象;”
+	base* pb = &der;
+	//“指向基类型的指针 = 派生类对象的地址;” 
+	cout << "pb->geta()=" << pb->geta() << endl;
+	//访问基类成员部分
+	//cout<<pb->getb()<<endl; 
+	//ERROR! 直接访问非基类成员部分
+	cout << "((derived *)pb)->getb()=" << ((derived*)pb)->getb() << endl;
+	//访问非基类成员部分时，要经过指针类型的强制转换
+	//derived *pd = &bs1; 
+	//ERROR! “指向派生类类型的指针=基类对象的地址;” 
+}
+
+
+
+二义性问题
+（1）单继承时父类与子类间重名成员的处理
+单继承时父类与子类间成员重名时，按如下规定进行处理：对子类而言，不加类名限定时默认为是处理子类成员，而要访问父类重名成员时，则要通过类名限定。
+（2）多重继承情况下二基类间重名成员的处理
+多重继承情况下二基类间成员重名时，按如下方式进行处理：对子类而言，不加类名限定时默认为是处理子类成员，而要访问父类重名成员时，则要通过类名限定。
+（3）多级混合继承（非虚拟继承）包含两个基类实例情况的处理
+多级混合继承情况下，若类D从两条不同“路径”同时对类A进行了一般性继承（非虚拟继承）的话，则类D的对象中会同时包含着两个类A的实例。此时，对类D而言，要通过类名限定来指定访问两个类A实例中的哪一个。
+（或采取虚拟继承）
+
+多态性与虚函数
+一、函数超载
+1.仅在基类与其派生类的范围内实现
+2.允许多个不同函数使用完全相同的函数名、函数参数表以及函数返回类型
+二、动态联编
+C++规定，基类指针可以指向其派生类的对象（也即，可将派生类对象的地址赋给其基类指针变量）， 但反过来不可以。这一点正是函数超载及虚函数用法的基础。
+1.虚函数  
+（1）虚函数的使用与函数超载密切相关。若基类中某函数被说明为虚函数，则意味着其派生类中也要用到与该函数同名、同参数表、同返回类型、但函数(实现)体不同的这同一个所谓的超载函数。
+（2）在基类中定义虚函数，其派生类的同原型函数默认为虚函数，可省略virtual关键字。只在派生类中定义虚函数没有意义
+class graphelem {
+protected:
+	int color;
+public:
+	graphelem(int col) {
+		color=col;
+	}
+	virtual void draw(){ ... };   
+  /*虚函数draw，每一个类都要“draw”出属于它的类对象图形*/
+}; 
+class line:public graphelem {
+  public:
+	virtual void draw(){ ... };
+	//虚函数draw，负责画出“line”
+	...
+};
+class circle:public graphelem{
+  public:
+	virtual void draw(){ ... };  
+	//虚函数draw，负责画出“circle”
+	...
+}; 
+class triangle:public graphelem{
+  public:
+	virtual void draw(){ ... };  
+	//虚函数draw，负责画出“triangle”
+	...
+};
+//使用指向基类的指针（动态联编，要靠执行程序时其基类指针的“动态”取值来确定调用哪一个类的draw函数）
+graphelem *pObj;
+line ln1;
+circle cir1;	
+triangle tri1;
+pObj=&lin1;	  pObj->draw();
+pObj=&cir1;	  pObj->draw();	
+pObj=&tri1;	  pObj->draw(); 
+
+练习
+设计圆类，并以圆类为基类，派生圆柱类、圆锥类和圆球类（分别求出其面积和体积）
+要求：
+自行确定各类具有的数据成员、函数成员，如果需要对象成员，再自行设计相关类；
+在设计程序过程中，尽量多地涉及类继承与多态性的重要概念，如虚函数、纯虚函数、抽象基类等等。
+
+#include<iostream>
+#include<math.h>
+using namespace std;
+const int pie = 3;
+class Round {
+	int radius;
+public:
+	Round(int n) { radius = n; };
+	int getR() { return this->radius; };
+	virtual int area() { return pie * radius * radius; };
+	virtual int volume() = 0;
+};
+class cylinder:public Round {
+	int high;
+public:
+	cylinder(int r, int h) :Round(r) {
+		high = h;
+	};
+	int getCylinderR() { return getR(); };
+	int getCylinderH() { return high; };
+	virtual int area() { return pie * (getR() * getR() * 2 + getR() * high * 2); };
+	virtual int volume() { return pie * getR() * getR() * high; };
+};
+class cone :public cylinder {
+public:
+	cone(int r, int h) :cylinder(r, h){};
+	int getConeR() { return getR(); };
+	int getConeH() { return getCylinderH(); };
+	virtual int area() { return pie * getR() * getR()+pie*getR()*sqrt(getR()*getR()+getCylinderH()*getCylinderH()); };
+	virtual int volume() { return pie * getR() * getR() * getConeH()/3; };
+};
+class ball :public Round {
+public:
+	ball(int r) :Round(r) {};
+	int getBallR() { return getR(); };
+	virtual int area() { return 4 * pie * getBallR()*getBallR(); };
+	virtual int volume() { return 4 * getBallR() * getBallR() * getBallR() * pie / 3; };
+};
+int main() {
+	cylinder zhu(1, 2);
+	cone zhui(3, 4);
+	ball qiu(5);
+	Round* p;
+	p = &zhu;
+	cout<<p->area()<<" "<<p->volume()<<endl;
+	p = &zhui;
+	cout << p->area() << " " << p->volume() << endl;
+	p = &qiu;	
+	cout << p->area() << " " << p->volume() << endl;
+	return 0;
+}
+
+
